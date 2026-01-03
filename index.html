@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subtitle Downloader</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #1a1a1a; color: white;}
+        .card { background: #2d2d2d; padding: 2rem; border-radius: 12px; text-align: center; width: 400px; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 6px; border: none; background: #404040; color: white; box-sizing: border-box;}
+        button { background-color: #f1c40f; color: black; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px;}
+        button:hover { background-color: #d4ac0d; }
+        #msg { margin-top: 15px; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>YouTube Subtitle Saver</h2>
+    <input type="text" id="urlInput" placeholder="Paste YouTube Link here...">
+    
+    <select id="formatSelect">
+        <option value="srt">SRT (With Timestamps)</option>
+        <option value="txt">TXT (Text Only)</option>
+    </select>
+
+    <button onclick="download()">Download</button>
+    <div id="msg"></div>
+</div>
+
+<script>
+    async function download() {
+        const url = document.getElementById('urlInput').value;
+        const format = document.getElementById('formatSelect').value;
+        const msg = document.getElementById('msg');
+        
+        // CHANGE THIS URL AFTER DEPLOYING (e.g., https://your-project.vercel.app/download)
+        // For now, keep it local or relative if hosting frontend+backend together
+        const backendUrl = '/download'; 
+
+        if (!url) return;
+        msg.innerText = "Processing...";
+        
+        try {
+            const response = await fetch(backendUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url, format }) // Send format to backend
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = `subtitles.${format}`;
+                link.click();
+                msg.innerText = "Success!";
+                msg.style.color = "#4caf50";
+            } else {
+                msg.innerText = "Error: Video might not have captions.";
+                msg.style.color = "#ff5252";
+            }
+        } catch (e) {
+            msg.innerText = "Connection Error";
+        }
+    }
+</script>
+
+</body>
+</html>
